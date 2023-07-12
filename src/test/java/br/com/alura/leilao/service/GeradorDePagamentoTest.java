@@ -11,7 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.mockito.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.*;
 
 public class GeradorDePagamentoTest {
 
@@ -24,16 +24,26 @@ public class GeradorDePagamentoTest {
     @Captor
     private ArgumentCaptor<Pagamento> captor;
 
+    @Mock
+    private Clock clock;
+
     @BeforeEach
     public void beforeEach() {
         MockitoAnnotations.initMocks(this);
-        this.gerador = new GeradorDePagamento(pagamentoDao);
+        this.gerador = new GeradorDePagamento(pagamentoDao, clock);
     }
 
     @Test
     public void deveriaCriarPagamentoParaVencedorDoLeilao() {
         Leilao leilao = leilao();
         Lance vencedor = leilao.getLanceVencedor();
+
+        LocalDate data = LocalDate.of(2020, 12, 7);
+        Instant instant = data.atStartOfDay(ZoneId.systemDefault()).toInstant();
+
+        Mockito.when(clock.instant()).thenReturn(instant);
+        Mockito.when(clock.getZone()).thenReturn(ZoneId.systemDefault());
+
         gerador.gerarPagamento(vencedor);
 
         //e assim que verifico esse objeto criado, dizendo que eu não consigo criá-lo porém eu peço para o mckito verificar esse capture gerado em tempo de execução.
