@@ -1,20 +1,22 @@
 package br.com.alura.leilao.service;
 
-import br.com.alura.leilao.dao.LeilaoDao;
-import br.com.alura.leilao.model.Lance;
-import br.com.alura.leilao.model.Leilao;
-import br.com.alura.leilao.model.Usuario;
-import org.junit.Test;
-import org.junit.jupiter.api.BeforeEach;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FinalizarLeilaoServiceTest {
+import org.junit.Assert;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
+import br.com.alura.leilao.dao.LeilaoDao;
+import br.com.alura.leilao.model.Lance;
+import br.com.alura.leilao.model.Leilao;
+import br.com.alura.leilao.model.Usuario;
+
+class FinalizarLeilaoServiceTest {
 
     private FinalizarLeilaoService service;
 
@@ -24,14 +26,25 @@ public class FinalizarLeilaoServiceTest {
     @BeforeEach
     public void beforeEach() {
         MockitoAnnotations.initMocks(this);
-        service = new FinalizarLeilaoService(leilaoDao);
+        this.service = new FinalizarLeilaoService(leilaoDao);
     }
 
     @Test
-    public void deveriaFinalizarUmLeilao() {
-        service.finalizarLeiloesExpirados();
-    }
+    void deveriaFinalizarUmLeilao() {
+        List<Leilao> leiloes = leiloes();
 
+        Mockito.when(leilaoDao.buscarLeiloesExpirados())
+                .thenReturn(leiloes);
+
+        service.finalizarLeiloesExpirados();
+
+        Leilao leilao = leiloes.get(0);
+        Assert.assertTrue(leilao.isFechado());
+        Assert.assertEquals(new BigDecimal("900"),
+                leilao.getLanceVencedor().getValor());
+
+        Mockito.verify(leilaoDao).salvar(leilao);
+    }
 
     private List<Leilao> leiloes() {
         List<Leilao> lista = new ArrayList<>();
@@ -51,6 +64,6 @@ public class FinalizarLeilaoServiceTest {
         lista.add(leilao);
 
         return lista;
-
     }
+
 }
